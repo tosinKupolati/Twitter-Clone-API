@@ -1,3 +1,4 @@
 fastapi[all]
 SQLAlchemy
 pydantic-settings
+psycopg2
