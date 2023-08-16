@@ -1,11 +1,12 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import Field, ConfigDict, BaseModel, EmailStr
 from datetime import datetime
-from typing import Optional, List
-from pydantic.types import conint
+from typing import Optional
+from typing_extensions import Annotated
 
 
 class UserBase(BaseModel):
     email: EmailStr
+    phone_number: Optional[str]
 
 
 class UserCreate(UserBase):
@@ -15,9 +16,7 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     created_at: datetime
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PostBase(BaseModel):
@@ -34,17 +33,13 @@ class Post(PostBase):
     id: int
     created_at: datetime
     user_id: int
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PostJoin(BaseModel):
     Post: Post
     like_count: int
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Token(BaseModel):
@@ -58,4 +53,4 @@ class TokenData(BaseModel):
 
 class Like(BaseModel):
     post_id: int
-    dir: conint(ge=0, le=1)
+    dir: Annotated[int, Field(ge=0, le=1)]

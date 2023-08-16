@@ -12,10 +12,18 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     # check if the user has registered before
     is_registered_user = db.query(models.User).filter(
-        models.User.email == user.email)
+        models.User.email == user.email).first()
     if is_registered_user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="email already associated with a user")
+
+    # if phone number is provided, check if it has been registered before
+    user_registered_phone_number = db.query(models.User).filter(
+        models.User.phone_number == user.phone_number).first()
+    if user_registered_phone_number:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="phone number already associated with a user")
+
     # hash the password - user.password
     hashed_password = utils.hash(user.password)
     user.password = hashed_password

@@ -26,7 +26,7 @@ def like(like: schemas.Like, db: Session = Depends(get_db), current_user: schema
         new_like = models.Like(post_id=like.post_id, user_id=current_user.id)
         db.add(new_like)
         db.commit()
-        return {"message": "successfully added like for this post"}
+        return {"message": "successfully liked this post"}
     else:
         if not found_like:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,

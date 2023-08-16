@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 from ..database import get_db
 from typing import List, Annotated
 from .. import models, schemas, oauth2
-from sqlalchemy.sql.expression import text
 from sqlalchemy import select
 from sqlalchemy import func
 

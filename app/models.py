@@ -13,7 +13,7 @@ class User(Base):
     password = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True),
                         nullable=False, server_default=text("now()"))
-    phone_number = Column(Integer, nullable=False, unique=True)
+    phone_number = Column(String, unique=True)
     # relationships using attributes
     posts = relationship("Post", back_populates="user")
     likes = relationship("Like", back_populates="user")
