@@ -17,17 +17,24 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="email already associated with a user")
 
-    # if phone number is provided, check if it has been registered before
-    user_registered_phone_number = db.query(models.User).filter(
+    # check if the phone number is unique to user
+    phone_number_exists = db.query(models.User).filter(
         models.User.phone_number == user.phone_number).first()
-    if user_registered_phone_number:
+    if phone_number_exists:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="phone number already associated with a user")
+
+    # check if the username is unique to user
+    username_exists = db.query(models.User).filter(
+        models.User.username == user.username).first()
+    if username_exists:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="username already associated with a user")
 
     # hash the password - user.password
     hashed_password = utils.hash(user.password)
     user.password = hashed_password
-    new_user = models.User(**user.dict())
+    new_user = models.User(**user.model_dump())
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -35,14 +42,14 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=schemas.Token)
-def login_user(user_login: OAuth2PasswordRequestForm = Depends(),
+def login_user(user_credentials: Annotated[OAuth2PasswordRequestForm, Depends()],
                db: Session = Depends(get_db)):
     user = db.query(models.User).filter(
-        models.User.email == user_login.username).first()
+        models.User.email == user_credentials.username).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Credentials")
-    if not utils.verify(user_login.password, user.password):
+    if not utils.verify(user_credentials.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     access_token = oauth2.create_access_token(
@@ -51,6 +58,6 @@ def login_user(user_login: OAuth2PasswordRequestForm = Depends(),
 
 
 @router.get("/logout")
-def logout_user(user: Annotated[schemas.User, Depends(oauth2.get_current_user)]):
+def logout_user(user: Annotated[schemas.User, Depends(oauth2.get_current_active_user)]):
     access_token = oauth2.create_access_token(data={"user_id": user.id})
     return {"access_token": access_token, "token_type": "bearer"}

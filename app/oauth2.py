@@ -11,7 +11,7 @@ SECRET_KEY = settings.secret_key
 ALGORITHM = settings.algorithm
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 
 def create_access_token(data: dict, expires_in: Optional[int] = None):
@@ -44,3 +44,12 @@ def get_current_user(
     if user is None:
         raise credentials_exception
     return user
+
+
+def get_current_active_user(
+    current_user: Annotated[schemas.User, Depends(get_current_user)]
+):
+    if not current_user.is_active:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Inactive user")
+    return current_user

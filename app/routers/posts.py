@@ -4,7 +4,8 @@ from ..database import get_db
 from typing import List, Annotated
 from .. import models, schemas, oauth2
 from sqlalchemy import select
-from sqlalchemy import func
+from datetime import datetime
+from sqlalchemy.sql.expression import func
 
 
 router = APIRouter(
@@ -22,19 +23,19 @@ def get_posts(
     posts = db.execute(
         select(models.Post, func.count(models.Like.post_id).label("like_count")).
         join(models.Like, models.Post.id == models.Like.post_id, isouter=True).
-        group_by(models.Post.id).filter(models.Post.title.contains(search)).
+        group_by(models.Post.id).filter(models.Post.content.contains(search)).
         offset(skip).limit(limit)
-    ).mappings().all()
+    ).all()
 
     return posts
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.Post)
 def create_post(
-    user: Annotated[schemas.User, Depends(oauth2.get_current_user)],
+    user: Annotated[schemas.User, Depends(oauth2.get_current_active_user)],
     post: schemas.PostCreate, db: Session = Depends(get_db)
 ):
-    new_post = models.Post(user_id=user.id, **post.dict())
+    new_post = models.Post(user_id=user.id, **post.model_dump())
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
@@ -49,12 +50,11 @@ def get_post(id: int, db: Session = Depends(get_db)):
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"post with id: {id} was not found")
-
     return post
 
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_post(user: Annotated[schemas.User, Depends(oauth2.get_current_user)], id: int, db: Session = Depends(get_db)):
+def delete_post(user: Annotated[schemas.User, Depends(oauth2.get_current_active_user)], id: int, db: Session = Depends(get_db)):
     post_query = db.query(models.Post).filter(models.Post.id == id)
     post = post_query.first()
     if not post:
@@ -70,8 +70,8 @@ def delete_post(user: Annotated[schemas.User, Depends(oauth2.get_current_user)],
 
 @router.put("/{id}", response_model=schemas.Post)
 def update_post(
-        user: Annotated[schemas.User, Depends(oauth2.get_current_user)],
-        id: int, updated_post: schemas.PostCreate, db: Session = Depends(get_db)):
+        user: Annotated[schemas.User, Depends(oauth2.get_current_active_user)],
+        id: int, updated_post: schemas.PostUpdate, db: Session = Depends(get_db)):
     post_query = db.query(models.Post).filter(models.Post.id == id)
 
     post = post_query.first()
@@ -82,6 +82,18 @@ def update_post(
     if post.user_id != user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="not authorized to perform requested action")
-    post_query.update(updated_post.dict(), synchronize_session=False)
+
+    if updated_post.content:
+        post_query.update({"content": updated_post.content},
+                          synchronize_session=False)
+
+    if updated_post.published:
+        if not post.published:
+            post_query.update(
+                {"published": updated_post.published}, synchronize_session=False)
+
+    post_query.update({"updated_at": datetime.now()},
+                      synchronize_session=False)
+
     db.commit()
     return post_query.first()

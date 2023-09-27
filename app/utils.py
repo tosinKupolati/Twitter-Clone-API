@@ -15,3 +15,8 @@ def verify(plain_password: str, hashed_password: str):
 def find_post_by_id(id: int, db: Session):
     post = db.query(models.Post).filter(models.Post.id == id).first()
     return post
+
+
+def find_user_by_id(id: int, db: Session):
+    user = db.query(models.User).filter(models.User.id == id).first()
+    return user

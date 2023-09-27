@@ -6,7 +6,9 @@ from typing_extensions import Annotated
 
 class UserBase(BaseModel):
     email: EmailStr
-    phone_number: Optional[str]
+    phone_number: str
+    name: str
+    username: str
 
 
 class UserCreate(UserBase):
@@ -16,23 +18,38 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     created_at: datetime
+    bio: str | None
+    cover_image: str | None
+    profile_image: str | None
+    updated_at: datetime | None
     model_config = ConfigDict(from_attributes=True)
 
 
-class PostBase(BaseModel):
-    title: str
+class UserJoin(BaseModel):
+    User: User
+    follower_count: int
+
+
+class UserUpdate(BaseModel):
+    email: EmailStr | None = None
+    phone_number: str | None = None
+    name: str | None = None
+    username: str | None = None
+    bio: str | None = None
+    cover_image: str | None = None
+    profile_image: str | None = None
+
+
+class PostCreate(BaseModel):
     content: str
     published: bool = True
 
 
-class PostCreate(PostBase):
-    pass
-
-
-class Post(PostBase):
+class Post(PostCreate):
     id: int
-    created_at: datetime
     user_id: int
+    created_at: datetime
+    updated_at: datetime | None
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -40,6 +57,11 @@ class PostJoin(BaseModel):
     Post: Post
     like_count: int
     model_config = ConfigDict(from_attributes=True)
+
+
+class PostUpdate(BaseModel):
+    content: str | None = None
+    published: bool | None = None
 
 
 class Token(BaseModel):
@@ -53,4 +75,9 @@ class TokenData(BaseModel):
 
 class Like(BaseModel):
     post_id: int
+    dir: Annotated[int, Field(ge=0, le=1)]
+
+
+class Follow(BaseModel):
+    followed_id: int
     dir: Annotated[int, Field(ge=0, le=1)]

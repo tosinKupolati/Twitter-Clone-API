@@ -8,7 +8,7 @@ router = APIRouter(prefix="/like", tags=["Like"])
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def like(like: schemas.Like, db: Session = Depends(get_db), current_user: schemas.User = Depends(oauth2.get_current_user)):
+def like(like: schemas.Like, db: Session = Depends(get_db), current_user: schemas.User = Depends(oauth2.get_current_active_user)):
     post = utils.find_post_by_id(like.post_id, db)
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
