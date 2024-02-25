@@ -1,20 +1,20 @@
 # Twitter-Clone-API
 
-## Features
+# Features
 
 - Users can register and login to their accounts.
 - All users can access all posts and its likes.
 - Authenticated users can create, edit, delete their own posts and like/unlike posts.
-- Authenticated users can follow/unfollow other users
+- Authenticated users can follow/unfollow other users.
 
-## Technologies
+# Technologies
 
 - [Python](https://www.python.org/)
 - [FastAPI](https://fastapi.tiangolo.com/)
 - [Postgresql](https://www.postgresql.org/)
 - [SQLAlchemy](https://www.sqlalchemy.org/)
 
-## Setup
+# Setup
 
 ```python
 cd root/of/project
@@ -23,7 +23,7 @@ pip install -r requirements.txt
 
 - Create a .env file in your project root folder and add your variables. See .env.example for assistance.
 
-## Usage
+# Usage
 
 Start the project by running the following commands
 
