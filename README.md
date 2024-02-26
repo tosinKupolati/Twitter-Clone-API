@@ -3,7 +3,7 @@
 # Features
 
 - Users can register and login to their accounts.
-- All users can access all posts and its likes.
+- All users can access all posts and the likes on each post.
 - Authenticated users can create, edit, delete their own posts and like/unlike posts.
 - Authenticated users can follow/unfollow other users.
 
