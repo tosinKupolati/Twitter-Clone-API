@@ -28,4 +28,4 @@ app.include_router(follows.router, prefix="/api/v1")
 
 @app.get("/")
 def root():
-    return {"message": "hey people! welcome to my twitter-clone-api"}
+    return {"message": "hey there! welcome to my twitter-clone-api"}
