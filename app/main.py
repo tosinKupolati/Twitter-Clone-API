@@ -7,7 +7,7 @@ from .config import settings
 
 # models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="TwitterCloneAPI")
+app = FastAPI(title="Twitter-Clone-API")
 
 origins = ["*"]
 
@@ -28,4 +28,4 @@ app.include_router(follows.router, prefix="/api/v1")
 
 @app.get("/")
 def root():
-    return {"message": "hey there! welcome to my twitter-clone-api"}
+    return {"message": "hello there! welcome to my twitter-clone-api"}
